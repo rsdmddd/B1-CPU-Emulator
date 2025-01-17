@@ -37,7 +37,8 @@ typedef enum {
     PTS = 23,
     PTL = 24
 
-    #define ALL 0b1111 //might seem unclean to define it here
+    //might seem unclean to define it here
+    #define ALL   0b1111 
     #define NALL  0b0000
     #define NEG   0b1000
     #define EVEN  0b0100
@@ -53,9 +54,7 @@ struct CPU
     signed char AC;
     const unsigned char R0; //Initalized in Setup
     signed char GPRS[8]; //wei proposed 16
-
     bool halted;
-    
     unsigned char I_ROM[255], RAM[255];
 };
 
