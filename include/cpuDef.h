@@ -52,7 +52,7 @@ struct CPU
     unsigned char PC, SP, FR, UI, POU;
     signed char AC;
     const unsigned char R0; //Initalized in Setup
-    unsigned char GPRS[8]; //wei proposed 16
+    signed char GPRS[8]; //wei proposed 16
 
     bool halted;
     
