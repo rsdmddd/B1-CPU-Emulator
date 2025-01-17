@@ -5,22 +5,16 @@
 static inline void Setup(struct CPU * pCPU) {
   memset(pCPU, 0, sizeof(struct CPU));
 }
-
-
 static inline int ReadGPR(unsigned char GPR_SELECT, struct CPU * pCPU) {
   return pCPU -> GPRS[GPR_SELECT]; 
 }
-
-
 static inline int FetchByte(unsigned char ADDRESS, struct CPU * pCPU) {
   return pCPU -> I_ROM[ADDRESS]; 
 }
-
 static inline int WriteGPR(unsigned char GPR_SELECT, unsigned char VAL, struct CPU * pCPU) {
   pCPU -> GPRS[GPR_SELECT] = VAL; 
   return 0;
 }
-
 int Execute(size_t ticks, struct CPU * pCPU) {
   for (size_t i = 0; i < ticks; i++) {
     if (pCPU->halted == true) {
@@ -51,6 +45,7 @@ int Execute(size_t ticks, struct CPU * pCPU) {
       pCPU -> RAM[FetchByte(pCPU -> PC + IMMA_OFFSET, pCPU)], pCPU);
       break;
     case ADD:
+      unsigned char result = (FetchByte(REGA_OFFSET, pCPU) + FetchByte(REGD_OFFSET, pCPU));
       WriteGPR(FetchByte(pCPU->PC + REGD_OFFSET, pCPU), 
       (ReadGPR(FetchByte(pCPU->PC + REGA_OFFSET, pCPU), pCPU) + 
       ReadGPR(FetchByte(pCPU->PC + REGB_OFFSET, pCPU), pCPU)), pCPU);
