@@ -100,7 +100,9 @@ int Execute(size_t ticks, struct CPU *pCPU) {
               }
               break;
           case SJM:
-              pCPU->PC = (FetchByte(pCPU->PC + IMMB_OFFSET, pCPU) - NEXT_INS);
+              if (FetchByte(PC+IMMA_OFFSET, pCPU) ^ pCPU->FR > 0) {
+                pCPU->PC = FetchByte(pCPU->PC + IMMB_OFFSET, pCPU);
+              }
               break;
           case CALL:
               pCPU->SP++;
@@ -118,6 +120,8 @@ int Execute(size_t ticks, struct CPU *pCPU) {
               *(pCPU->pPIN), pCPU);
           case PTL:
               pCPU->PIN = *(pCPU->pPIN);  
+          case PTS
+              WriteGPR(FetchByte(PC+REGA_OFFSET, pCPU), *(pCPU->pPIN), pCPU)
           default:
               printf("Unrecognized opcode at %d\n", pCPU->PC);
               break;
@@ -165,6 +169,7 @@ int main() {
    nextInstruction += NEXT_INS;
    newCPU.I_ROM[nextInstruction] = JMP;
    newCPU.I_ROM[nextInstruction + IMMA_OFFSET] = 12; 
+   nextInstruction += NEXT_INS;
 //
   Execute(50, & newCPU);
   EXP_GPR(4, (0x1 + 0x1), &newCPU, true);
