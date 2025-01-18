@@ -11,7 +11,6 @@
 
 typedef enum {
 
-    NOP = 0,
     HLT = 1,
     UIN = 2,
     LDI = 3,
@@ -50,7 +49,10 @@ struct CPU
 {
     /*Programme Counter, Stack Pointer, Flags Register, 
     User Input Register, Port Out*/
-    unsigned char PC, SP, FR, UI, POU;
+    
+    unsigned char *pPIN; //pointer for port in for other created CPUS
+    unsigned char PC, SP, FR;
+    signed char UI, PIN, POU;
     signed char AC;
     const unsigned char R0; //Initalized in Setup
     signed char GPRS[8]; //wei proposed 16

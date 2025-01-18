@@ -2,8 +2,9 @@
 #include "cpuDef.h"
 #include "exp.h"
 
-static inline void Setup(struct CPU * pCPU) {
+static inline void Setup(struct CPU * pCPU, * pPIN) {
   memset(pCPU, 0, sizeof(struct CPU));
+  pCPU->pPIN = pPIN;
 }
 static inline int ReadGPR(unsigned char GPR_SELECT, struct CPU * pCPU) {
   return pCPU -> GPRS[GPR_SELECT]; 
@@ -27,7 +28,7 @@ int Execute(size_t ticks, struct CPU *pCPU) {
               break;
           case UIN:
               printf("Enter user input: ");
-              scanf("%c", &pCPU->UI);
+              scanf("%d", &pCPU->UI);
               break;
           case LDI:
               WriteGPR(FetchByte(pCPU->PC + REGD_OFFSET, pCPU), 
@@ -112,22 +113,15 @@ int Execute(size_t ticks, struct CPU *pCPU) {
               pCPU->SP--;
               pCPU->PC -= NEXT_INS;
               break;
+          case PTS:
+              WriteGPR(FetchByte(PC+REGD_OFFSET, pCPU),
+              *(pCPU->pPIN), pCPU);
+          case PTL:
+              pCPU->PIN = *(pCPU->pPIN);  
           default:
               printf("Unrecognized opcode at %d\n", pCPU->PC);
               break;
         }
-        /* Section for dynamic debugging (printing)
-        printf("ALU Result: %d\n", result);
-        printf("ROM: IMMA %d\n", pCPU->I_ROM[pCPU->PC + IMMA_OFFSET]);
-        printf("ROM: IMMB %d\n", pCPU->I_ROM[pCPU->PC + IMMB_OFFSET]);
-        printf("ROM: REGA %d\n", pCPU->I_ROM[pCPU->PC + REGA_OFFSET]);
-        printf("ACTUAL VAL REGA %d\n", ReadGPR(pCPU->GPRS[FetchByte(pCPU->PC + REGA_OFFSET, pCPU)], pCPU));
-        printf("ACTUAL VAL REGB %d\n", ReadGPR(pCPU->GPRS[FetchByte(pCPU->PC + REGB_OFFSET, pCPU)]), pCPU);
-        printf("ACTUAL VAL REGD %d\n", ReadGPR(pCPU->GPRS[FetchByte(pCPU->PC + REGD_OFFSET, pCPU)]), pCPU);
-        */
-        //dbg
-        printf("R1 %d\n", pCPU->GPRS[1]);
-        printf("R2 %d\n", pCPU->GPRS[2]);
         pCPU->PC += NEXT_INS;
         pCPU->AC = result;
     }
@@ -136,21 +130,44 @@ int Execute(size_t ticks, struct CPU *pCPU) {
 
 int main() {
   struct CPU newCPU;
+  struct CPU secondCPU;
   Setup(&newCPU);
-  //Push 0xf9 and pop to GPR2
-  int nextInstruction = 0;
-  newCPU.I_ROM[nextInstruction] = LDI;
-  newCPU.I_ROM[nextInstruction+IMMA_OFFSET] = 0xf9;
-  newCPU.I_ROM[nextInstruction+REGD_OFFSET] = 0x1;
-  nextInstruction+=NEXT_INS;
-  newCPU.I_ROM[nextInstruction] = PUSH;
-  newCPU.I_ROM[nextInstruction+REGA_OFFSET] = 0x1;
-  nextInstruction+=NEXT_INS;
-  newCPU.I_ROM[nextInstruction] = POP;
-  newCPU.I_ROM[nextInstruction+REGD_OFFSET] = 0x2;
-  //
-  Execute(3, & newCPU);
-  EXP_GPR(2, 0xf9, &newCPU, true);
+  Setup(&secondCPU);
+  newCPU.pPIN = &secondCPU.PIN
+  secondCPU.pPIN = &newCPU.PIN
+//Fib program
+   int nextInstruction = 0;
+   newCPU.I_ROM[nextInstruction] = LDI;
+   newCPU.I_ROM[nextInstruction + IMMA_OFFSET] = 0x0; 
+   newCPU.I_ROM[nextInstruction + REGD_OFFSET] = 0x1; 
+   nextInstruction += NEXT_INS;
+   newCPU.I_ROM[nextInstruction] = LDI;
+   newCPU.I_ROM[nextInstruction + IMMA_OFFSET] = 0x1; 
+   newCPU.I_ROM[nextInstruction + REGD_OFFSET] = 0x2; 
+   nextInstruction += NEXT_INS;
+   newCPU.I_ROM[nextInstruction] = ADD;
+   newCPU.I_ROM[nextInstruction + REGA_OFFSET] = 0x1; 
+   newCPU.I_ROM[nextInstruction + REGB_OFFSET] = 0x2; 
+   newCPU.I_ROM[nextInstruction + REGD_OFFSET] = 0x3; 
+   nextInstruction += NEXT_INS;
+   newCPU.I_ROM[nextInstruction] = MOV;
+   newCPU.I_ROM[nextInstruction + REGA_OFFSET] = 0x2; 
+   newCPU.I_ROM[nextInstruction + REGD_OFFSET] = 0x1; 
+   nextInstruction += NEXT_INS;
+   newCPU.I_ROM[nextInstruction] = MOV;
+   newCPU.I_ROM[nextInstruction + REGA_OFFSET] = 0x3; 
+   newCPU.I_ROM[nextInstruction + REGD_OFFSET] = 0x2; 
+   nextInstruction += NEXT_INS;
+   newCPU.I_ROM[nextInstruction] = ADD;
+   newCPU.I_ROM[nextInstruction + REGA_OFFSET] = 0x1; 
+   newCPU.I_ROM[nextInstruction + REGB_OFFSET] = 0x2; 
+   newCPU.I_ROM[nextInstruction + REGD_OFFSET] = 0x3;
+   nextInstruction += NEXT_INS;
+   newCPU.I_ROM[nextInstruction] = JMP;
+   newCPU.I_ROM[nextInstruction + IMMA_OFFSET] = 12; 
+//
+  Execute(50, & newCPU);
+  EXP_GPR(4, (0x1 + 0x1), &newCPU, true);
   int garbage; scanf("%d", & garbage);
   return 0;
 }
